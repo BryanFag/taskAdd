@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.devup.tarefa.ui.screens.home.HomeScreen
+import com.devup.tarefa.ui.screens.login.LoginScreen
 import com.devup.tarefa.ui.screens.register.RegisterScreen
 import com.devup.tarefa.ui.screens.register.UserViewModel
 
@@ -23,7 +24,7 @@ fun AppNavigation() {
         factory = ViewModelProvider.AndroidViewModelFactory(application)
     )
 
-    NavHost(navController = navController, startDestination = "register") {
+    NavHost(navController = navController, startDestination = "login") {
         composable("register") {
             RegisterScreen(
                 navController = navController,
@@ -32,6 +33,12 @@ fun AppNavigation() {
         }
         composable("home") {
             HomeScreen(navController = navController)
+        }
+        composable("login") {
+            LoginScreen(
+                navController = navController,
+                viewModel = userViewModel
+            )
         }
     }
 }

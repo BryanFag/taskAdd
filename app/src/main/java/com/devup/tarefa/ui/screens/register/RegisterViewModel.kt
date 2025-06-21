@@ -10,9 +10,9 @@ import com.devup.tarefa.data.entity.UserEntity
 import com.devup.tarefa.data.repository.UserRepository
 import kotlinx.coroutines.launch
 
-class UserViewModel(application: Application) : AndroidViewModel(application) {
+open class UserViewModel(application: Application) : AndroidViewModel(application) {
 
-    val users: LiveData<List<UserEntity>>
+    open val users: LiveData<List<UserEntity>>
         get() = this.repository.getAll().asLiveData()
 
     private val repository: UserRepository
