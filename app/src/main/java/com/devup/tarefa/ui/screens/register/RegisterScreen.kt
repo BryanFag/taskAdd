@@ -1,6 +1,6 @@
 package com.devup.tarefa.ui.screens.register
 
-import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,13 +35,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.devup.tarefa.data.entity.UserEntity
 
 @Composable
-fun RegisterScreen(navController: NavController) {
-
+fun RegisterScreen(
+    navController: NavController,
+    viewModel: UserViewModel
+) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
+    val users by viewModel.users.observeAsState(emptyList())
+    Log.i("tarefa", users.toString())
 
     Column(
         modifier = Modifier
@@ -55,13 +61,15 @@ fun RegisterScreen(navController: NavController) {
             fontSize = 30.sp,
             fontWeight = FontWeight.ExtraBold,
         )
+
         Spacer(modifier = Modifier.height(80.dp))
+
         Box(
             modifier = Modifier
                 .size(130.dp)
                 .clip(CircleShape)
                 .background(color = Color(0xFF18181B))
-        ){
+        ) {
             Icon(
                 modifier = Modifier
                     .align(Alignment.Center)
@@ -71,7 +79,9 @@ fun RegisterScreen(navController: NavController) {
                 tint = Color.White,
             )
         }
+
         Spacer(modifier = Modifier.height(80.dp))
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -86,6 +96,7 @@ fun RegisterScreen(navController: NavController) {
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             )
+
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -94,6 +105,7 @@ fun RegisterScreen(navController: NavController) {
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             )
+
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
@@ -102,16 +114,21 @@ fun RegisterScreen(navController: NavController) {
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(modifier = Modifier.height(80.dp))
+
             Button(
                 onClick = {
+                    val user = UserEntity(name = name, email = email, phone = phone)
+                    viewModel.insert(user)
                     navController.navigate("home")
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFBEF264)),
+                    containerColor = Color(0xFFBEF264)
+                ),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
@@ -125,9 +142,10 @@ fun RegisterScreen(navController: NavController) {
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 private fun PreviewScreen() {
     val navController = rememberNavController()
-    RegisterScreen(navController = navController)
+    //RegisterScreen(navController = navController)
 }
