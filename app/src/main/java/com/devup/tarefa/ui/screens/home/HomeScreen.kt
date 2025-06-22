@@ -49,15 +49,14 @@ import com.devup.tarefa.ui.screens.register.RegisterScreen
 
 
 @Composable
-fun HomeScreen(
-    navController: NavController,
-    showDialog: Boolean = false,
-    onDismiss: () -> Unit = {}
-) {
+fun HomeScreen() {
     val isPreview = LocalInspectionMode.current
+    var showDialog by remember { mutableStateOf(false) }
+    val onDismiss: () -> Unit = { showDialog = false }
+    var inputText by remember { mutableStateOf("") }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        var inputText by remember { mutableStateOf("") }
+    Box(
+        modifier = Modifier.fillMaxSize()) {
 
         Column(
             modifier = Modifier
@@ -546,5 +545,5 @@ fun HomeScreen(
 @Composable
 private fun PreviewScreen() {
     val navController = rememberNavController()
-    HomeScreen(navController = navController)
+    HomeScreen()
 }

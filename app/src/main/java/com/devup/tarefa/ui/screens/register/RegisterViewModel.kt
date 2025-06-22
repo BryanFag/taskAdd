@@ -1,30 +1,22 @@
 package com.devup.tarefa.ui.screens.register
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.devup.tarefa.data.AppDatabase
 import com.devup.tarefa.data.entity.UserEntity
 import com.devup.tarefa.data.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import androidx.lifecycle.LiveData
 
-open class UserViewModel(application: Application) : AndroidViewModel(application) {
-
-    open val users: LiveData<List<UserEntity>>
-        get() = this.repository.getAll().asLiveData()
-
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
     private val repository: UserRepository
+) : ViewModel() {
 
-    init {
-        val userDao = AppDatabase.getDatabase(application).userDao()
-        repository = UserRepository(userDao)
-    }
+    val users: LiveData<List<UserEntity>> = repository.getAll().asLiveData()
 
-    fun getAll() = viewModelScope.launch {
-        repository.getAll()
-    }
     fun insert(user: UserEntity) = viewModelScope.launch {
         repository.insert(user)
     }
@@ -37,4 +29,3 @@ open class UserViewModel(application: Application) : AndroidViewModel(applicatio
         repository.update(user)
     }
 }
-

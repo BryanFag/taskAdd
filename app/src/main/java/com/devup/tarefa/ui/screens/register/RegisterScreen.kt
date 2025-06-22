@@ -1,6 +1,5 @@
 package com.devup.tarefa.ui.screens.register
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,12 +34,14 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.devup.tarefa.data.entity.UserEntity
+import androidx.hilt.navigation.compose.hiltViewModel
+
 
 @Composable
 fun RegisterScreen(
-    navController: NavController,
-    viewModel: UserViewModel
+    navController: NavController
 ) {
+    val viewModel: RegisterViewModel = hiltViewModel()
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -144,5 +145,5 @@ fun RegisterScreen(
 @Composable
 private fun PreviewScreen() {
     val navController = rememberNavController()
-    //RegisterScreen(navController = navController)
+    RegisterScreen(navController = navController)
 }
