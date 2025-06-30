@@ -8,9 +8,21 @@ import javax.inject.Inject
 class UserRepository @Inject constructor(
     private val userDao: UserDao
 ) {
-    fun getAll(): Flow<List<UserEntity>> = userDao.getAll()
+    fun getAll(): Flow<List<UserEntity>> {
+        return  userDao.getAll()
+    }
 
-    suspend fun insert(user: UserEntity) = userDao.insert(user)
-    suspend fun delete(user: UserEntity) = userDao.delete(user)
-    suspend fun update(user: UserEntity) = userDao.update(user)
+    fun getUserId(userId: Int): UserEntity {
+        return  userDao.getUserId(userId)
+    }
+
+    suspend fun insert(user: UserEntity) {
+       return userDao.insert(user)
+    }
+    suspend fun delete(user: UserEntity) {
+        return userDao.delete(user)
+    }
+    suspend fun update(user: UserEntity) {
+         return userDao.update(user)
+    }
 }

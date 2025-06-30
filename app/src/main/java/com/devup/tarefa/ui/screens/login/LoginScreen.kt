@@ -22,18 +22,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.devup.tarefa.R
-import com.devup.tarefa.ui.screens.register.RegisterViewModel
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.devup.tarefa.data.entity.TaskEntity
+import com.devup.tarefa.data.entity.UserEntity
+import com.devup.tarefa.ui.screens.home.HomeViewModel
 
 @Composable
 fun LoginScreen(
     navController: NavController,
 ) {
-    val viewModel: RegisterViewModel = hiltViewModel()
+    val loginViewModel: LoginViewModel = hiltViewModel()
+    val homeViewModel: HomeViewModel = hiltViewModel()
 
-    val users by viewModel.users.observeAsState(emptyList())
+    val users by loginViewModel.users.observeAsState(emptyList())
 
     Column(
         modifier = Modifier
@@ -97,7 +100,7 @@ fun LoginScreen(
                 items(users) { user ->
                     Card(
                         onClick = {
-                            viewModel.insert(user)
+                            homeViewModel.onUserSelected(user)
                             navController.navigate("home")
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -151,7 +154,7 @@ fun LoginScreen(
 
                             IconButton(
                                 onClick = {
-                                    viewModel.delete(user)
+                                    loginViewModel.delete(user)
                                 },
                                 modifier = Modifier.size(48.dp)
                             ) {
@@ -171,7 +174,7 @@ fun LoginScreen(
             onClick = { navController.navigate("register") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(bottom = 50.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFBEF264)
             ),

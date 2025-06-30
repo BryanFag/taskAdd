@@ -3,6 +3,7 @@ package com.devup.tarefa.di
 import android.content.Context
 import androidx.room.Room
 import com.devup.tarefa.data.AppDatabase
+import com.devup.tarefa.data.datasource.local.TaskDao
 import com.devup.tarefa.data.datasource.local.UserDao
 import dagger.Module
 import dagger.Provides
@@ -21,8 +22,14 @@ object DatabaseModule {
         @ApplicationContext appContext: Context
 
     ): AppDatabase =
-        Room.databaseBuilder(appContext, AppDatabase::class.java, "app_db").build()
+        Room.databaseBuilder(appContext, AppDatabase::class.java, "app_db").fallbackToDestructiveMigration().build()
 
     @Provides
-    fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
+    fun provideTaskDao(db: AppDatabase): TaskDao {
+        return db.taskDao()
+    }
+    @Provides
+    fun provideUserDao(db: AppDatabase): UserDao {
+        return db.userDao()
+    }
 }

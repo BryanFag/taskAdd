@@ -8,14 +8,14 @@ import com.devup.tarefa.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.lifecycle.LiveData
+import kotlinx.coroutines.flow.Flow
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val repository: UserRepository
 ) : ViewModel() {
 
-    val users: LiveData<List<UserEntity>> = repository.getAll().asLiveData()
+    val users: Flow<List<UserEntity>> = repository.getAll()
 
     fun insert(user: UserEntity) = viewModelScope.launch {
         repository.insert(user)

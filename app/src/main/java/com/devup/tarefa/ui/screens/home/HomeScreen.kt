@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -42,18 +45,24 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.devup.tarefa.R
-import com.devup.tarefa.ui.screens.register.RegisterScreen
-
+import com.devup.tarefa.data.entity.TaskEntity
+import com.devup.tarefa.data.singleton.UserSingleton
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+) {
     val isPreview = LocalInspectionMode.current
     var showDialog by remember { mutableStateOf(false) }
     val onDismiss: () -> Unit = { showDialog = false }
-    var inputText by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var dateFinish by remember { mutableStateOf("") }
+    var timeFinish by remember { mutableStateOf("") }
+    val homeViewModel: HomeViewModel = hiltViewModel()
+    val tasks by homeViewModel.tasks.collectAsState(initial = emptyList())
+    var selectedTask by remember { mutableStateOf<TaskEntity?>(null) }
 
     Box(
         modifier = Modifier.fillMaxSize()) {
@@ -126,7 +135,7 @@ fun HomeScreen() {
                 )
                 Text(
                     modifier = Modifier,
-                    text = "Bryan Fagundes",
+                    text = (UserSingleton.name ?: "Usuário").lowercase().replaceFirstChar { it.uppercase() },
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
@@ -139,8 +148,8 @@ fun HomeScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 OutlinedTextField(
-                    value = inputText,
-                    onValueChange = { inputText = it },
+                    value = description,
+                    onValueChange = { description = it },
                     leadingIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.tag_icon),
@@ -155,14 +164,15 @@ fun HomeScreen() {
                         )
                     },
                     placeholder = { Text("Digite aqui...") },
+                    textStyle = TextStyle(color = Color.White),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 )
                 OutlinedTextField(
-                    value = inputText,
-                    onValueChange = { inputText = it },
+                    value = dateFinish,
+                    onValueChange = { dateFinish = it },
                     leadingIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.date_icon),
@@ -172,19 +182,20 @@ fun HomeScreen() {
                     },
                     label = {
                         Text(
-                            "20 de Agosto",
+                            "Data de término",
                             color = Color.White
                         )
                     },
                     placeholder = { Text("Digite aqui...") },
+                    textStyle = TextStyle(color = Color.White),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 )
                 OutlinedTextField(
-                    value = inputText,
-                    onValueChange = { inputText = it },
+                    value = timeFinish,
+                    onValueChange = { timeFinish = it },
                     leadingIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.tag_icon),
@@ -194,11 +205,12 @@ fun HomeScreen() {
                     },
                     label = {
                         Text(
-                            "08:00",
+                            "Hora de término",
                             color = Color.White
                         )
                     },
                     placeholder = { Text("Digite aqui...") },
+                    textStyle = TextStyle(color = Color.White),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -206,7 +218,17 @@ fun HomeScreen() {
                 )
                 Spacer(modifier = Modifier.padding(top = 10.dp))
                 Button(
-                    onClick = { /* Ação do botão */ },
+                    onClick = {
+                        val task = TaskEntity(
+                            userId = UserSingleton.id,
+                            name = UserSingleton.name,
+                            description = description,
+                            insertDate = System.currentTimeMillis(),
+                            dateFinish = dateFinish,
+                            timeFinish = timeFinish,
+                            status = 0
+                        )
+                        homeViewModel.insertTask(task)},
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
@@ -238,191 +260,68 @@ fun HomeScreen() {
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                 )
-                Box(
-                    modifier = Modifier
-                        .padding(top = 10.dp, start = 16.dp, end = 16.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF18181B))
-                        .fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.check_icon),
-                            contentDescription = "Ícone de tarefa",
-                            tint = Color(0xFFBEF264),
-                            modifier = Modifier
-                                .padding(end = 12.dp)
-                                .size(20.dp)
-                        )
-                        Text(
-                            text = "Tarefa 01",
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Normal,
-                        )
-                        Column(
+                LazyColumn {
+                    items(tasks) { task ->
+                        Button(
+                            onClick = {
+                                selectedTask = task
+                                showDialog = true
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 16.dp),
-                            horizontalAlignment = Alignment.End
+                                .padding(horizontal = 16.dp, vertical = 2.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF18181B),
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(16.dp)
                         ) {
-                            Text(
-                                text = "sab, 18",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Light,
-                            )
-                            Text(
-                                text = "08:00",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Light,
-                            )
-                        }
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(top = 10.dp, start = 16.dp, end = 16.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF18181B))
-                        .fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.check_icon),
-                            contentDescription = "Ícone de tarefa",
-                            tint = Color(0xFFBEF264),
-                            modifier = Modifier
-                                .padding(end = 12.dp)
-                                .size(20.dp)
-                        )
-                        Text(
-                            text = "Tarefa 01",
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Normal,
-                        )
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            Text(
-                                text = "sab, 18",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Light,
-                            )
-                            Text(
-                                text = "08:00",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Light,
-                            )
-                        }
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(top = 10.dp, start = 16.dp, end = 16.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF18181B))
-                        .fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.check_icon),
-                            contentDescription = "Ícone de tarefa",
-                            tint = Color(0xFFBEF264),
-                            modifier = Modifier
-                                .padding(end = 12.dp)
-                                .size(20.dp)
-                        )
-                        Text(
-                            text = "Tarefa 01",
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Normal,
-                        )
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            Text(
-                                text = "sab, 18",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Light,
-                            )
-                            Text(
-                                text = "08:00",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Light,
-                            )
-                        }
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(top = 10.dp, start = 16.dp, end = 16.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF18181B))
-                        .fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.not_check_icon),
-                            contentDescription = "Ícone de tarefa",
-                            tint = Color.Gray,
-                            modifier = Modifier
-                                .padding(end = 12.dp)
-                                .size(20.dp)
-                        )
-                        Text(
-                            text = "Tarefa 01",
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Normal,
-                        )
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            Text(
-                                text = "sab, 18",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Light,
-                            )
-                            Text(
-                                text = "08:00",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Light,
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val taskStatus = if (task.status == 2) R.drawable.check_icon else R.drawable.not_check_icon
+                                Icon(
+                                    painter = painterResource(
+                                        id = taskStatus
+                                    ),
+                                    contentDescription = "Ícone de tarefa",
+                                    tint = if (task.status == 1) Color(0xFFBEF264) else Color.Gray,
+                                    modifier = Modifier
+                                        .padding(end = 12.dp)
+                                        .size(20.dp)
+                                )
+                                Text(
+                                    text = task.description,
+                                    color = Color.White,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Normal,
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Column(
+                                    horizontalAlignment = Alignment.End
+                                ) {
+                                    Text(
+                                        text = task.dateFinish,
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Light,
+                                    )
+                                    Text(
+                                        text = task.timeFinish,
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Light,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
+
             if (showDialog) {
                 Box(
                     modifier = Modifier
@@ -448,7 +347,7 @@ fun HomeScreen() {
                             Spacer(modifier = Modifier.height(16.dp))
 
                             OutlinedTextField(
-                                value = "Jantar",
+                                value = selectedTask?.description ?: "",
                                 onValueChange = {},
                                 textStyle = TextStyle(color = Color.White),
                                 leadingIcon = {
@@ -465,7 +364,7 @@ fun HomeScreen() {
                             Spacer(modifier = Modifier.height(8.dp))
 
                             OutlinedTextField(
-                                value = "20 de agosto",
+                                value = selectedTask?.dateFinish ?: "",
                                 onValueChange = {},
                                 textStyle = TextStyle(color = Color.White),
                                 leadingIcon = {
@@ -482,7 +381,7 @@ fun HomeScreen() {
                             Spacer(modifier = Modifier.height(8.dp))
 
                             OutlinedTextField(
-                                value = "21:00",
+                                value = selectedTask?.timeFinish ?: "",
                                 onValueChange = {},
                                 textStyle = TextStyle(color = Color.White),
                                 leadingIcon = {
@@ -499,7 +398,7 @@ fun HomeScreen() {
                             Spacer(modifier = Modifier.height(8.dp))
 
                             OutlinedTextField(
-                                value = "Atividade concluída",
+                                value = selectedTask?.status.toString(),
                                 onValueChange = {},
                                 textStyle = TextStyle(color = Color.White),
                                 leadingIcon = {
@@ -545,5 +444,5 @@ fun HomeScreen() {
 @Composable
 private fun PreviewScreen() {
     val navController = rememberNavController()
-    HomeScreen()
+//    HomeScreen(loginViewModel = loginViewModel)
 }

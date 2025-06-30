@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.TextStyle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.devup.tarefa.data.entity.UserEntity
@@ -41,7 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun RegisterScreen(
     navController: NavController
 ) {
-    val viewModel: RegisterViewModel = hiltViewModel()
+    val registerViewModel: RegisterViewModel = hiltViewModel()
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -91,6 +92,7 @@ fun RegisterScreen(
                 onValueChange = { name = it },
                 label = { Text("Seu nome") },
                 placeholder = { Text("Digite aqui...") },
+                textStyle = TextStyle(color = Color.White),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -100,6 +102,7 @@ fun RegisterScreen(
                 onValueChange = { email = it },
                 label = { Text("Email") },
                 placeholder = { Text("Digite aqui...") },
+                textStyle = TextStyle(color = Color.White),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -109,6 +112,7 @@ fun RegisterScreen(
                 onValueChange = { phone = it },
                 label = { Text("Telefone") },
                 placeholder = { Text("Digite aqui...") },
+                textStyle = TextStyle(color = Color.White),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -118,7 +122,7 @@ fun RegisterScreen(
             Button(
                 onClick = {
                     val user = UserEntity(name = name, email = email, phone = phone)
-                    viewModel.insert(user)
+                    registerViewModel.insert(user)
                     navController.navigate("home")
                 },
                 modifier = Modifier
@@ -141,9 +145,9 @@ fun RegisterScreen(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-private fun PreviewScreen() {
-    val navController = rememberNavController()
-    RegisterScreen(navController = navController)
-}
+//@Preview(showBackground = true)
+//@Composable
+//private fun PreviewScreen() {
+//    val navController = rememberNavController()
+//    RegisterScreen(navController = navController)
+//}
