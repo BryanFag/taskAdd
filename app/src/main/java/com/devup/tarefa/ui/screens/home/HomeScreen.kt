@@ -46,7 +46,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
 import com.devup.tarefa.R
 import com.devup.tarefa.data.entity.TaskEntity
 import com.devup.tarefa.data.singleton.UserSingleton
@@ -54,15 +53,19 @@ import com.devup.tarefa.data.singleton.UserSingleton
 @Composable
 fun HomeScreen(
 ) {
+
+    var showDialog   by remember { mutableStateOf(false) }
+    var description  by remember { mutableStateOf("") }
+    var dateFinish   by remember { mutableStateOf("") }
+    var timeFinish   by remember { mutableStateOf("") }
+    var selectedTask by remember { mutableStateOf<TaskEntity?>(null) }
+
     val isPreview = LocalInspectionMode.current
-    var showDialog by remember { mutableStateOf(false) }
-    val onDismiss: () -> Unit = { showDialog = false }
-    var description by remember { mutableStateOf("") }
-    var dateFinish by remember { mutableStateOf("") }
-    var timeFinish by remember { mutableStateOf("") }
+
     val homeViewModel: HomeViewModel = hiltViewModel()
     val tasks by homeViewModel.tasks.collectAsState(initial = emptyList())
-    var selectedTask by remember { mutableStateOf<TaskEntity?>(null) }
+
+    val onDismiss: () -> Unit = { showDialog = false }
 
     Box(
         modifier = Modifier.fillMaxSize()) {
@@ -439,10 +442,4 @@ fun HomeScreen(
             }
         }
     }
-}
-@Preview(showBackground = true)
-@Composable
-private fun PreviewScreen() {
-    val navController = rememberNavController()
-//    HomeScreen(loginViewModel = loginViewModel)
 }

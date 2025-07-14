@@ -43,7 +43,7 @@ fun RegisterScreen(
     navController: NavController
 ) {
     val registerViewModel: RegisterViewModel = hiltViewModel()
-    var name by remember { mutableStateOf("") }
+    var name  by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
@@ -143,11 +143,3 @@ fun RegisterScreen(
         }
     }
 }
-
-
-//@Preview(showBackground = true)
-//@Composable
-//private fun PreviewScreen() {
-//    val navController = rememberNavController()
-//    RegisterScreen(navController = navController)
-//}

@@ -34,8 +34,7 @@ fun LoginScreen(
     navController: NavController,
 ) {
     val loginViewModel: LoginViewModel = hiltViewModel()
-    val homeViewModel: HomeViewModel = hiltViewModel()
-
+    val homeViewModel : HomeViewModel  = hiltViewModel()
     val users by loginViewModel.users.observeAsState(emptyList())
 
     Column(
