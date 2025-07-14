@@ -2,14 +2,11 @@ package com.devup.tarefa.ui.screens.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,171 +17,195 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.devup.tarefa.R
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.draw.clip
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.devup.tarefa.data.entity.TaskEntity
-import com.devup.tarefa.data.entity.UserEntity
-import com.devup.tarefa.ui.screens.home.HomeViewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.navigation.NavController
 
 @Composable
 fun LoginScreen(
     navController: NavController,
 ) {
-    val loginViewModel: LoginViewModel = hiltViewModel()
-    val homeViewModel : HomeViewModel  = hiltViewModel()
-    val users by loginViewModel.users.observeAsState(emptyList())
+    var email    by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF09090B))
-            .padding(16.dp),
+            .background(color = (Color(0xFF232323))),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        /**
+         * Header
+         */
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp, start = 4.dp),
+                .padding(top = 45.dp, start = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(
                 painter = painterResource(id = R.drawable.icon_task),
-                contentDescription = "Ícone do app",
+                contentDescription = "Ícone de exemplo",
                 modifier = Modifier
                     .size(48.dp)
-                    .padding(8.dp)
+                    .padding(8.dp),
+                contentScale = ContentScale.Fit
             )
             Text(
-                text = "Usuários",
+                text = "Tarefas",
                 color = Color.White,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.ExtraBold,
             )
+            Icon(
+                modifier = Modifier
+                    .size(30.dp),
+                imageVector = Icons.Default.Add,
+                contentDescription = "Ícone de favorito",
+                tint = Color.White,
+            )
         }
-
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth(0.7f)
-                .padding(bottom = 16.dp),
+                .align(Alignment.Start),
             thickness = 3.dp,
             color = Color(0xFFBEF264)
         )
 
-        if (users.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Nenhum usuário cadastrado",
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(vertical = 32.dp)
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(top = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(users) { user ->
-                    Card(
-                        onClick = {
-                            homeViewModel.onUserSelected(user)
-                            navController.navigate("home")
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFF18181B)
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(bottom = 8.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.Black)
-                                            .border(1.dp, Color.Gray, CircleShape)
-                                    )
-                                    Text(
-                                        text = user.name,
-                                        color = Color.White,
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(start = 12.dp)
-                                    )
-                                }
+        Spacer(modifier = Modifier.height(80.dp))
 
-                                Text(
-                                    text = "Email: ${user.email}",
-                                    color = Color.White.copy(alpha = 0.8f),
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.padding(bottom = 4.dp)
-                                )
-
-                                Text(
-                                    text = "Telefone: ${user.phone}",
-                                    color = Color.White.copy(alpha = 0.8f),
-                                    fontSize = 14.sp
-                                )
-                            }
-
-                            IconButton(
-                                onClick = {
-                                    loginViewModel.delete(user)
-                                },
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Excluir usuário",
-                                    tint = Color(0xFFEF4444)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Button(
-            onClick = { navController.navigate("register") },
+        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.animation))
+        val progress by animateLottieCompositionAsState(
+            composition = composition,
+            iterations = LottieConstants.IterateForever
+        )
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
+            modifier = Modifier
+                .size(260.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFBEF264)
-            ),
-            shape = RoundedCornerShape(8.dp)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Cadastrar novo usuário",
-                color = Color.Black,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = {
+                    Text(
+                        "Email",
+                        color = Color.White
+                    )
+                },
+                placeholder = { Text("Digite aqui...") },
+                textStyle = TextStyle(color = Color.White),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             )
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = {
+                    Text(
+                        "Senha",
+                        color = Color.White
+                    )
+                },
+                placeholder = { Text("Digite aqui...") },
+                textStyle = TextStyle(color = Color.White),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            )
+            TextButton(
+                onClick = {
+//                    Adicionar logica para redefinir a senha
+                },
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .align(Alignment.End)
+            ) {
+                Text(
+                    text = "Redefinir a senha",
+                    color = Color(0xFFC2C2C2),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = TextStyle(textDecoration = TextDecoration.Underline)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Button(
+                onClick = {
+                    navController.navigate("home")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFBEF264)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = "LOGIN",
+                    color = Color.Black,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Não tem uma conta?",
+                    color = Color(0xFFC2C2C2),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+                Text(
+                    text = "Cadastre-se",
+                    color = Color(0xFFBEF264),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = TextStyle(textDecoration = TextDecoration.Underline),
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = 5.dp)
+                        .clickable { navController.navigate("register") }
+                )
+            }
         }
     }
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//fun LoginScreenPreview() {
+//    LoginScreen()
+//}

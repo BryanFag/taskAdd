@@ -26,14 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextStyle
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.devup.tarefa.data.entity.UserEntity
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -43,9 +41,9 @@ fun RegisterScreen(
     navController: NavController
 ) {
     val registerViewModel: RegisterViewModel = hiltViewModel()
-    var name  by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
+    var name     by remember { mutableStateOf("") }
+    var email    by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -108,9 +106,9 @@ fun RegisterScreen(
             )
 
             OutlinedTextField(
-                value = phone,
-                onValueChange = { phone = it },
-                label = { Text("Telefone") },
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Senha") },
                 placeholder = { Text("Digite aqui...") },
                 textStyle = TextStyle(color = Color.White),
                 shape = RoundedCornerShape(8.dp),
@@ -121,7 +119,7 @@ fun RegisterScreen(
 
             Button(
                 onClick = {
-                    val user = UserEntity(name = name, email = email, phone = phone)
+                    val user = UserEntity(name = name, email = email, password = password)
                     registerViewModel.insert(user)
                     navController.navigate("home")
                 },
