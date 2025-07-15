@@ -11,7 +11,7 @@ import com.devup.tarefa.data.entity.UserEntity
     entities = [
         UserEntity::class,
         TaskEntity::class],
-    version = 4,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

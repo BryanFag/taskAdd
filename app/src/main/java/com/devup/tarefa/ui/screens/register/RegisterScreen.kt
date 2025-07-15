@@ -1,6 +1,12 @@
 package com.devup.tarefa.ui.screens.register
 
+import ConverterUriToByteArray.uriToByteArray
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -30,29 +38,49 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.navigation.NavController
 import com.devup.tarefa.data.entity.UserEntity
 import androidx.hilt.navigation.compose.hiltViewModel
-
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import com.devup.tarefa.ui.screens.login.LoginViewModel
 
 @Composable
 fun RegisterScreen(
     navController: NavController
 ) {
     val registerViewModel: RegisterViewModel = hiltViewModel()
-    var name     by remember { mutableStateOf("") }
-    var email    by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val loginViewModel   : LoginViewModel    = hiltViewModel()
+
+    var name             by remember { mutableStateOf("") }
+    var email            by remember { mutableStateOf("") }
+    var password         by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val focusManager       = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val pictureBytes = selectedImageUri?.let {uriToByteArray(LocalContext.current, it) }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? -> selectedImageUri = uri }
+
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = (Color(0xFF09090B))),
+            .background(color = (Color(0xFF232323))),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            modifier = Modifier.padding(45.dp),
+            modifier = Modifier.padding(top = 80.dp),
             text = "Cadastro do Usuário",
             color = Color.White,
             fontSize = 30.sp,
@@ -65,17 +93,35 @@ fun RegisterScreen(
             modifier = Modifier
                 .size(130.dp)
                 .clip(CircleShape)
-                .background(color = Color(0xFF18181B))
+                .background(Color(0xFF18181B))
+                .clickable {
+                    imagePickerLauncher.launch("image/*")
+                },
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(50.dp),
-                imageVector = Icons.Default.Add,
-                contentDescription = "Ícone de favorito",
-                tint = Color.White,
-            )
+            if (selectedImageUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        ImageRequest.Builder(LocalContext.current)
+                            .data(selectedImageUri)
+                            .build()
+                    ),
+                    contentDescription = "Imagem de perfil",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(130.dp)
+                        .clip(CircleShape)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Selecionar foto",
+                    tint = Color.White,
+                    modifier = Modifier.size(50.dp)
+                )
+            }
         }
+
 
         Spacer(modifier = Modifier.height(80.dp))
 
@@ -88,39 +134,85 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Seu nome") },
+                label = {
+                    Text(
+                        "Nome",
+                        color = Color.White
+                    )
+                },
                 placeholder = { Text("Digite aqui...") },
                 textStyle = TextStyle(color = Color.White),
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                )
             )
-
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = {
+                    Text(
+                        "Email",
+                        color = Color.White
+                    )
+                },
                 placeholder = { Text("Digite aqui...") },
                 textStyle = TextStyle(color = Color.White),
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                )
             )
 
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Senha") },
+                label = {
+                    Text(
+                        "Senha",
+                        color = Color.White
+                    )
+                },
                 placeholder = { Text("Digite aqui...") },
                 textStyle = TextStyle(color = Color.White),
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                    }
+                )
             )
 
             Spacer(modifier = Modifier.height(80.dp))
 
             Button(
                 onClick = {
-                    val user = UserEntity(name = name, email = email, password = password)
+                    val user = UserEntity(
+                        name = name,
+                        email = email,
+                        password = password,
+                        picture = pictureBytes
+                    )
                     registerViewModel.insert(user)
+                    loginViewModel.setUserActive(user)
                     navController.navigate("home")
                 },
                 modifier = Modifier

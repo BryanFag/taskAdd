@@ -7,7 +7,7 @@ object UserSingleton
 {
     var id              : Int      = 0
     var name            : String    = ""
-    var picture         : Long      = 0
+    var picture         : ByteArray? = null
     var task            : String    = ""
     var password        : String?   = ""
 }

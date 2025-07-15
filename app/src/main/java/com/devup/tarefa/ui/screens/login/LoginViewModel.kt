@@ -9,22 +9,27 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.devup.tarefa.data.repository.TaskRepository
+import com.devup.tarefa.data.singleton.UserSingleton
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val userRepository: UserRepository,
-    private val taskRepository: TaskRepository
+    private val userRepository: UserRepository
 ) : ViewModel() {
-
-    val users = userRepository.getAll().asLiveData()
 
     fun getUserEmail(email: String, password: String, onResult: (Boolean) -> Unit) = viewModelScope.launch {
         val userinfo = userRepository.getUserEmail(email)
         if (userinfo != null && userinfo.password == password) {
             onResult(true)
+            setUserActive(userinfo)
         } else {
             onResult(false)
         }
+    }
+
+    fun setUserActive(userId: UserEntity) {
+        UserSingleton.id = userId.id
+        UserSingleton.name = userId.name
+        UserSingleton.picture = userId.picture
     }
 
     fun insert(user: UserEntity) = viewModelScope.launch {
@@ -36,4 +41,5 @@ class LoginViewModel @Inject constructor(
     fun update(user: UserEntity) = viewModelScope.launch {
         userRepository.update(user)
     }
+
 }

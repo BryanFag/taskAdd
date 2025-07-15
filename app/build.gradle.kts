@@ -44,10 +44,12 @@ android {
 dependencies {
 
     implementation(libs.androidx.room.runtime)
+    implementation(libs.coil.compose)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.exifinterface)
     ksp(libs.hilt.android.compiler)
     ksp(libs.androidx.room.compiler)
     implementation(libs.accompanist.systemuicontroller)

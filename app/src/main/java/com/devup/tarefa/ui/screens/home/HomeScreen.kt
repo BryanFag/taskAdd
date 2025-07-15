@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -33,39 +35,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.devup.tarefa.R
 import com.devup.tarefa.data.entity.TaskEntity
 import com.devup.tarefa.data.singleton.UserSingleton
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.asImageBitmap
 
 @Composable
 fun HomeScreen(
 ) {
-
     var showDialog   by remember { mutableStateOf(false) }
     var description  by remember { mutableStateOf("") }
     var dateFinish   by remember { mutableStateOf("") }
     var timeFinish   by remember { mutableStateOf("") }
     var selectedTask by remember { mutableStateOf<TaskEntity?>(null) }
 
-    val isPreview = LocalInspectionMode.current
+    val focusManager       = LocalFocusManager.current
+    val isPreview          = LocalInspectionMode.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val homeViewModel: HomeViewModel = hiltViewModel()
+    val onDismiss    : () -> Unit    = { showDialog = false }
     val tasks by homeViewModel.tasks.collectAsState(initial = emptyList())
 
-    val onDismiss: () -> Unit = { showDialog = false }
+
 
     Box(
         modifier = Modifier.fillMaxSize()) {
@@ -73,7 +82,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = (Color(0xFF09090B)))
+                .background(color = (Color(0xFF232323))),
         ) {
             /**
              * Header
@@ -127,9 +136,26 @@ fun HomeScreen(
                         .size(64.dp)
                         .clip(CircleShape)
                         .background(Color.Black)
-                        .border(2.dp, Color.Gray, CircleShape),
-                )
-                Text(
+                        .border(2.dp, Color.Gray, CircleShape)
+                ) {
+                    UserSingleton.picture?.let { pictureBytes ->
+                        if (pictureBytes.isNotEmpty()) {
+                            val bitmap =
+                                ConverterUriToByteArray.decodeByteArrayWithCorrectOrientation(
+                                    pictureBytes
+                                )
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = "Foto do usuário",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                            )
+                        }
+                    }
+                }
+                    Text(
                     modifier = Modifier.padding(start = 10.dp),
                     text = "Olá, ",
                     color = Color.White,
@@ -171,7 +197,13 @@ fun HomeScreen(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                    )
                 )
                 OutlinedTextField(
                     value = dateFinish,
@@ -194,7 +226,14 @@ fun HomeScreen(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                    )
+
                 )
                 OutlinedTextField(
                     value = timeFinish,
@@ -217,7 +256,15 @@ fun HomeScreen(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            keyboardController?.hide()
+                        }
+                    )
                 )
                 Spacer(modifier = Modifier.padding(top = 10.dp))
                 Button(

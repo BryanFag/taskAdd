@@ -26,7 +26,9 @@ import com.devup.tarefa.R
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -49,11 +51,12 @@ fun LoginScreen(
     var showCheckAnimation by remember { mutableStateOf(false) }
     var isAuthenticated    by remember { mutableStateOf(false) }
 
-    val keyboardController = LocalSoftwareKeyboardController.current
-
+    val keyboardController             = LocalSoftwareKeyboardController.current
+    val focusManager                   = LocalFocusManager.current
+    val systemUiController             = rememberSystemUiController()
     val loginViewModel: LoginViewModel = hiltViewModel()
 
-    val systemUiController = rememberSystemUiController()
+
 
     SideEffect {
         systemUiController.setStatusBarColor(
@@ -143,12 +146,10 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
                 keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done
+                    imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
-                    onDone = {
-                        keyboardController?.hide()
-                    }
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 )
             )
 

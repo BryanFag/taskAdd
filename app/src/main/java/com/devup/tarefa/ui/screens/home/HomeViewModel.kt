@@ -15,14 +15,11 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
-    private val userRepository: UserRepository
 ) : ViewModel() {
+
     private val onUserId = UserSingleton.id
     val tasks: Flow<List<TaskEntity>> = taskRepository.getAllByUserId(onUserId)
-    fun onUserSelected(user: UserEntity) = viewModelScope.launch {
-        UserSingleton.id = user.id
-        UserSingleton.name = user.name
-    }
+
     fun insertTask(task: TaskEntity) = viewModelScope.launch {
         taskRepository.insert(task)
     }
