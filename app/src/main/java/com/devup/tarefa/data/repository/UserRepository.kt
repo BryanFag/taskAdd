@@ -16,6 +16,10 @@ class UserRepository @Inject constructor(
         return  userDao.getUserId(userId)
     }
 
+    suspend fun getUserEmail(userEmail: String): UserEntity? {
+        return  userDao.getUserEmail(userEmail)
+    }
+
     suspend fun insert(user: UserEntity) {
        return userDao.insert(user)
     }

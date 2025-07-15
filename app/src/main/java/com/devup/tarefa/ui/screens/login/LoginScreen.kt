@@ -1,14 +1,19 @@
 package com.devup.tarefa.ui.screens.login
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,14 +34,33 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 
 @Composable
 fun LoginScreen(
     navController: NavController,
 ) {
-    var email    by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email              by remember { mutableStateOf("") }
+    var password           by remember { mutableStateOf("") }
+    var showCheckAnimation by remember { mutableStateOf(false) }
+    var isAuthenticated    by remember { mutableStateOf(false) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val loginViewModel: LoginViewModel = hiltViewModel()
+
+    val systemUiController = rememberSystemUiController()
+
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = Color(0xFF82A449),
+            darkIcons = false
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -117,7 +141,15 @@ fun LoginScreen(
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 20.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                    }
+                )
             )
 
             OutlinedTextField(
@@ -134,7 +166,15 @@ fun LoginScreen(
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 20.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                    }
+                )
             )
             TextButton(
                 onClick = {
@@ -157,8 +197,12 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    navController.navigate("home")
-                },
+                    loginViewModel.getUserEmail(email, password, onResult = { authenticated ->
+                        if (authenticated) {
+                            isAuthenticated = true
+                            showCheckAnimation = true
+                        } else { Toast.makeText(navController.context,"Usuário ou senha inválidos!",Toast.LENGTH_SHORT).show() }}) },
+
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
@@ -199,6 +243,37 @@ fun LoginScreen(
                         .padding(start = 5.dp)
                         .clickable { navController.navigate("register") }
                 )
+            }
+        }
+    }
+
+    if (showCheckAnimation) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            val checkComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.check))
+            val checkProgress by animateLottieCompositionAsState(
+                composition = checkComposition,
+                iterations = 1,
+                speed = 1.5f,
+                isPlaying = true,
+                restartOnPlay = false
+            )
+
+            LottieAnimation(
+                composition = checkComposition,
+                progress = { checkProgress },
+                modifier = Modifier.size(180.dp)
+            )
+
+            LaunchedEffect(checkProgress) {
+                if (checkProgress == 1f) {
+                    showCheckAnimation = false
+                    navController.navigate("home")
+                }
             }
         }
     }

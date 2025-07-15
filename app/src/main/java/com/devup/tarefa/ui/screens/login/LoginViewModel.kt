@@ -8,10 +8,7 @@ import com.devup.tarefa.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.devup.tarefa.data.repository.TaskRepository
-import com.devup.tarefa.data.singleton.UserSingleton
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -20,6 +17,15 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
 
     val users = userRepository.getAll().asLiveData()
+
+    fun getUserEmail(email: String, password: String, onResult: (Boolean) -> Unit) = viewModelScope.launch {
+        val userinfo = userRepository.getUserEmail(email)
+        if (userinfo != null && userinfo.password == password) {
+            onResult(true)
+        } else {
+            onResult(false)
+        }
+    }
 
     fun insert(user: UserEntity) = viewModelScope.launch {
         userRepository.insert(user)
