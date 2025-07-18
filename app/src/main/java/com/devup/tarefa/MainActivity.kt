@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.devup.tarefa.ui.routes.AppNavigation
+import com.devup.tarefa.ui.screens.home.HomeScreen
 import com.devup.tarefa.ui.screens.login.LoginScreen
 import com.devup.tarefa.ui.theme.NumberPickerTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,7 +17,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NumberPickerTheme {
-                AppNavigation()
+//                AppNavigation()
+                HomeScreen()
             }
         }
     }
