@@ -3,9 +3,7 @@ package com.devup.tarefa.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.devup.tarefa.data.entity.TaskEntity
-import com.devup.tarefa.data.entity.UserEntity
 import com.devup.tarefa.data.repository.TaskRepository
-import com.devup.tarefa.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.devup.tarefa.data.singleton.UserSingleton
@@ -22,6 +20,14 @@ class HomeViewModel @Inject constructor(
 
     fun insertTask(task: TaskEntity) = viewModelScope.launch {
         taskRepository.insert(task)
+    }
+
+    fun updateTask(tasks: List<TaskEntity>) = viewModelScope.launch {
+        taskRepository.update(tasks)
+    }
+
+    fun deleteTask(task: TaskEntity) = viewModelScope.launch {
+        taskRepository.delete(task)
     }
 
 }

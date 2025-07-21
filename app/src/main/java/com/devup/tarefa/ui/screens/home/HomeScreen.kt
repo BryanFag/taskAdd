@@ -1,7 +1,7 @@
 package com.devup.tarefa.ui.screens.home
 
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,8 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -42,63 +40,57 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.devup.tarefa.R
 import com.devup.tarefa.data.entity.TaskEntity
 import com.devup.tarefa.data.singleton.UserSingleton
-import android.graphics.BitmapFactory
-import android.widget.TimePicker
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import com.devup.tarefa.ui.screens.componentes.DateInput
+import com.devup.tarefa.ui.screens.componentes.DescriptionInput
+import com.devup.tarefa.ui.screens.componentes.StatusInput
+import com.devup.tarefa.ui.screens.componentes.TimeInput
 import java.util.Calendar
 
 @Composable
 fun HomeScreen(
 ) {
-    var showDialog   by remember { mutableStateOf(false) }
-    var description  by remember { mutableStateOf("") }
-    var dateFinish   by remember { mutableStateOf("") }
-    var timeFinish   by remember { mutableStateOf("") }
-    var selectedTask by remember { mutableStateOf<TaskEntity?>(null) }
-    var showDatePicker by remember { mutableStateOf(false) }
+    var showDialog     by remember { mutableStateOf(false) }
+    var description    by remember { mutableStateOf("") }
+    var dateFinish     by remember { mutableStateOf("") }
+    var timeFinish     by remember { mutableStateOf("") }
+    var statusFinish   by remember { mutableStateOf(0) } // 0: Pendente, 1: Em Progresso, 2: Concluído, 3: Cancelado
+    var selectedTask   by remember { mutableStateOf<TaskEntity?>(null) }
 
-    val calendar = Calendar.getInstance()
-    val focusManager       = LocalFocusManager.current
+    var newDescription by remember { mutableStateOf("") }
+    var newDateFinish by remember { mutableStateOf("") }
+    var newTimeFinish by remember { mutableStateOf("") }
+
     val isPreview          = LocalInspectionMode.current
-    val keyboardController = LocalSoftwareKeyboardController.current
     val context            = LocalContext.current
-    val interactionSource  = remember { MutableInteractionSource() }
+
+    val onDismiss: () -> Unit    = { showDialog = false }
+
+    val homeViewModel: HomeViewModel = hiltViewModel()
+    val tasks by homeViewModel.tasks.collectAsState(initial = emptyList())
 
 
-//    val homeViewModel: HomeViewModel = hiltViewModel()
-    val onDismiss    : () -> Unit    = { showDialog = false }
-//    val tasks by homeViewModel.tasks.collectAsState(initial = emptyList())
-
-
-    // Mock data for tasks
-    val tasks = "teste".let {
-        listOf(
-            TaskEntity(1, 1, "Task 1", "teste", 100, "10:00", "10:00"),
-            TaskEntity(2, 1, "Task 2", "teste", 100, "11:00", "10:00"),
-            TaskEntity(3, 1, "Task 3", "teste", 100, "12:00", "10:00")
-        )
-    }
+////    // Mock data for tasks
+//    val tasks = "teste".let {
+//        listOf(
+//            TaskEntity(1, 1, "Task 1", "teste", 100, "10:00", "10:00"),
+//            TaskEntity(2, 1, "Task 2", "teste", 100, "11:00", "10:00"),
+//            TaskEntity(3, 1, "Task 3", "teste", 100, "12:00", "10:00")
+//        )
+//    }
 
 
     Box(
@@ -201,124 +193,16 @@ fun HomeScreen(
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.tag_icon),
-                            contentDescription = "Ícone de edição",
-                            tint = Color.Gray
-                        )
-                    },
-                    label = {
-                        Text(
-                            "Qual a atividade?",
-                            color = Color.White
-                        )
-                    },
-                    placeholder = { Text("Digite aqui...") },
-                    textStyle = TextStyle(color = Color.White),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    )
-                )
+                DescriptionInput(description = newDescription, onDescriptionChange = { newDescription = it })
 
-                Spacer(modifier = Modifier.padding(top = 10.dp))
+                Spacer(modifier = Modifier.padding(top = 5.dp))
 
-                // Substituir OutlinedTextField por Box para padronizar com hourFinish
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .height(60.dp)
-                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                        .clickable { showDatePicker = true },
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.tag_icon),
-                            contentDescription = "Ícone de data",
-                            tint = Color.Gray,
-                            modifier = Modifier.padding(start = 12.dp, end = 8.dp)
-                        )
-                        Column {
-                            Text(
-                                text = if (dateFinish.isNotEmpty()) dateFinish else "Selecione a data",
-                                color = Color.White,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-                if (showDatePicker) {
-                    DatePickerDialog(
-                        context,
-                        { _, y, m, d ->
-                            val mes = (m + 1).toString().padStart(2, '0')
-                            val dia = d.toString().padStart(2, '0')
-                            dateFinish = "$dia/$mes/$y"
-                            showDatePicker = false
-                        },
-                        calendar.get(Calendar.YEAR),
-                        calendar.get(Calendar.MONTH),
-                        calendar.get(Calendar.DAY_OF_MONTH)
-                    ).apply {
-                        setOnCancelListener { showDatePicker = false }
-                    }.show()
-                }
+                DateInput(dateFinish = newDateFinish, onDateSelected = { newDateFinish = it })
 
-                Spacer(modifier = Modifier.padding(top = 10.dp))
+                Spacer(modifier = Modifier.padding(top = 5.dp))
 
-                val hour = calendar.get(Calendar.HOUR_OF_DAY)
-                val minute = calendar.get(Calendar.MINUTE)
-                val (showTimePicker, setShowTimePicker) = remember { mutableStateOf(false) }
+                TimeInput(timeFinish = newTimeFinish, onTimeSelected = { newTimeFinish = it })
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .height(60.dp)
-                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                        .clickable { setShowTimePicker(true) },
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.tag_icon),
-                            contentDescription = "Ícone de hora",
-                            tint = Color.Gray,
-                            modifier = Modifier.padding(start = 12.dp, end = 8.dp)
-                        )
-                        Column {
-                            Text(
-                                text = if (timeFinish.isNotEmpty()) timeFinish else "Selecione a hora",
-                                color = Color.White,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-                if (showTimePicker) {
-                    TimePickerDialog(
-                        context,
-                        { _: TimePicker, selectedHour: Int, selectedMinute: Int ->
-                            timeFinish = String.format("%02d:%02d", selectedHour, selectedMinute)
-                            setShowTimePicker(false)
-                        },
-                        hour, minute, true
-                    ).apply {
-                        setOnCancelListener { setShowTimePicker(false) }
-                    }.show()
-                }
 
                 Spacer(modifier = Modifier.padding(top = 10.dp))
 
@@ -327,14 +211,19 @@ fun HomeScreen(
                         val task = TaskEntity(
                             userId = UserSingleton.id,
                             name = UserSingleton.name,
-                            description = description,
+                            description = newDescription,
                             insertDate = System.currentTimeMillis(),
-                            dateFinish = dateFinish,
-                            timeFinish = timeFinish,
+                            dateFinish = newDateFinish,
+                            timeFinish = newTimeFinish,
                             status = 0
                         )
-                        }
-                    ,
+                        if ( newDescription != "" && newDateFinish != "" && newTimeFinish != ""){
+                            homeViewModel.insertTask(task)
+                            newDescription = ""
+                            newDateFinish = ""
+                            newTimeFinish = ""
+                        } else { Toast.makeText(context,"Usuário ou senha inválidos!",Toast.LENGTH_SHORT).show() }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
@@ -371,6 +260,10 @@ fun HomeScreen(
                         Button(
                             onClick = {
                                 selectedTask = task
+                                description = task.description
+                                dateFinish = task.dateFinish
+                                timeFinish = task.timeFinish
+                                statusFinish = task.status
                                 showDialog = true
                             },
                             modifier = Modifier
@@ -388,13 +281,23 @@ fun HomeScreen(
                                     .padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                val taskStatus = if (task.status == 2) R.drawable.check_icon else R.drawable.not_check_icon
+                                val taskStatus = when (task.status) {
+                                    0 -> R.drawable.not_check_icon
+                                    1 -> R.drawable.in_progress_icon
+                                    2 -> R.drawable.check_icon
+                                    else -> R.drawable.cancelled_icon
+                                }
                                 Icon(
                                     painter = painterResource(
                                         id = taskStatus
                                     ),
                                     contentDescription = "Ícone de tarefa",
-                                    tint = if (task.status == 1) Color(0xFFBEF264) else Color.Gray,
+                                    tint = when (task.status) {
+                                        0 -> Color.Gray
+                                        1 -> Color.Yellow
+                                        2 -> Color.Green
+                                        else -> Color.Red
+                                    },
                                     modifier = Modifier
                                         .padding(end = 12.dp)
                                         .size(20.dp)
@@ -452,84 +355,66 @@ fun HomeScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            OutlinedTextField(
-                                value = selectedTask?.description ?: "",
-                                onValueChange = {},
-                                textStyle = TextStyle(color = Color.White),
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.tag_icon),
-                                        contentDescription = null,
-                                        tint = Color.Gray
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp)
+                            DescriptionInput(description = description,
+                                onDescriptionChange = { description = it }
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            OutlinedTextField(
-                                value = selectedTask?.dateFinish ?: "",
-                                onValueChange = {},
-                                textStyle = TextStyle(color = Color.White),
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.date_icon),
-                                        contentDescription = null,
-                                        tint = Color.Gray
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp)
+                            DateInput(
+                                dateFinish = dateFinish,
+                                onDateSelected = { dateFinish = it }
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            OutlinedTextField(
-                                value = selectedTask?.timeFinish ?: "",
-                                onValueChange = {},
-                                textStyle = TextStyle(color = Color.White),
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.time_icon),
-                                        contentDescription = null,
-                                        tint = Color.Gray
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp)
+                            TimeInput(timeFinish = timeFinish,
+                                onTimeSelected = { timeFinish = it }
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            OutlinedTextField(
-                                value = selectedTask?.status.toString(),
-                                onValueChange = {},
-                                textStyle = TextStyle(color = Color.White),
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.outline_bookmark_check_24),
-                                        contentDescription = null,
-                                        tint = Color.Gray
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Text(
-                                text = "Excluir atividade",
-                                color = Color.Gray,
-                                textDecoration = TextDecoration.Underline
+                            StatusInput(
+                                statusFinish = statusFinish,
+                                onStatusChange = { statusFinish = it }
                             )
 
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Button(
-                                onClick = onDismiss,
+                                onClick = {
+                                    val deleteTask = selectedTask
+                                    if (deleteTask != null) { homeViewModel.deleteTask(deleteTask) }
+                                    onDismiss()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                elevation = null,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Excluir atividade",
+                                    color = Color.Gray,
+                                    textDecoration = TextDecoration.Underline
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(
+                                onClick = {
+                                    val updateTask = TaskEntity(
+                                        id = selectedTask?.id ?: 0,
+                                        userId = UserSingleton.id,
+                                        name = UserSingleton.name,
+                                        description = description,
+                                        insertDate = selectedTask?.insertDate ?: System.currentTimeMillis(),
+                                        dateFinish = dateFinish,
+                                        timeFinish = timeFinish,
+                                        status = statusFinish
+                                    )
+                                    homeViewModel.updateTask(listOf(updateTask))
+                                    onDismiss()
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(

@@ -17,8 +17,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NumberPickerTheme {
-//                AppNavigation()
-                HomeScreen()
+                AppNavigation()
+//                HomeScreen()
             }
         }
     }
